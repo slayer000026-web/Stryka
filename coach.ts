@@ -221,42 +221,38 @@ router.post("/coach/chat", async (req, res) => {
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
 
-  let fullResponse = "";
+    let fullResponse = "";
 
   try {
-    const result = await model.generateContent({
+    const result = await model.generateContentStream({
       contents: chatMessages.map((msg) => ({
         role: msg.role === "system" ? "user" : msg.role,
         parts: [{ text: msg.content }],
       })),
     });
 
-    const response = await result.response;
-    const text = response.text();
+    for await (const chunk of result.stream) {
+      const chunkText = chunk.text();
+      fullResponse += chunkText;
+      res.write(`data: ${JSON.stringify({ content: chunkText })}\n\n`);
+    }
 
-    res.write(`data: ${JSON.stringify({ content: text })}\n\n`);
     res.write(`data: [DONE]\n\n`);
+
+    await db.insert(messagesTable).values({
+      conversationId,
+      role: "assistant",
+      content: fullResponse,
+    });
+
     res.end();
   } catch (error) {
     console.error("Error generating content:", error);
-    res.status(500).send("Error generating response");
-  }
-
-  // Save assistant response
-  await db.insert(messagesTable).values({
-    conversationId,
-    role: "assistant",
-    content: fullResponse,
-  });
-
-  res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-  res.end();
-  try {
-    req.log.error({ err }, "OpenAI streaming failed");
     res.write(`data: ${JSON.stringify({ error: "AI coach unavailable" })}\n\n`);
     res.end();
-  } catch (err) {}
+  }
 });
 
 export default router;
+
            
