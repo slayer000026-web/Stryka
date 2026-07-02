@@ -296,7 +296,6 @@
                 displayMessage(data.welcome || 'مرحباً! أنا مدربك الشخصي. أخبرني عن هدفك.', 'assistant');
             } catch (error) {
                 displayError('فشل تهيئة المحادثة. حاول مجدداً.');
-                console.error('Init error:', error);
             }
         }
 
@@ -362,7 +361,7 @@
                                     displayError(parsed.error);
                                 }
                             } catch (e) {
-                                console.error('Parse error:', e);
+                                // Silent error handling
                             }
                         }
                     }
@@ -373,7 +372,6 @@
                 }
             } catch (error) {
                 displayError('حدث خطأ. تحقق من الاتصال وحاول مجدداً.');
-                console.error('Send error:', error);
             } finally {
                 isLoading = false;
                 document.getElementById('sendBtn').disabled = false;
