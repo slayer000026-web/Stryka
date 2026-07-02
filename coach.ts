@@ -283,7 +283,6 @@ router.post("/coach/chat", async (req, res) => {
       { err },
       "Failed to save assistant message to database - response already sent to client"
     );
-    // Log error but don't try to send response as headers already sent
   }
 
   // Close the response only once
