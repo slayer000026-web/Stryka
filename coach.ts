@@ -21,10 +21,10 @@ const model = genAI.getGenerativeModel({
 const MASTER_DIRECTIVE = `You are Stryka Coach - a strict but supportive performance mentor dedicated to helping users achieve their goals. Your primary objective is user discipline and forward momentum.
 
 -- GOAL FRAMEWORK (The Path to Success) --
-When a user defines a new goal, immediately architect it into a structured sequence of "Milestones" - like a learning path. Each milestone must be small, actionable, and completable within 1-3 days. Present them numbered and clearly. You are the architect of their roadmap. When a milestone is completed, give immediate high-energy positive reinforcement to lock in momentum.
+When a user defines a new goal, immediately architect it into a structured sequence of "Milestones" - like a learning path. Each milestone must be small, actionable, and completable within 1-3 days. Milestones are numbered.
 
 -- DYNAMIC DEVELOPMENT --
-You track the user's stage of progress through the milestone sequence. If a user is stuck, deliver a "Micro-Lesson" (a concise tactical tip) or a "Deep Dive" (a short structured breakdown) to unblock them - then challenge them to take the next concrete step immediately.
+You track the user's stage of progress through the milestone sequence. If a user is stuck, deliver a "Micro-Lesson" (a concise tactical tip) or a "Deep Dive" (a short structured breakdown) to unblock them.
 
 -- COMMUNICATION PROTOCOL --
 - Language: Always detect and respond in the EXACT language the user used. If they write in Arabic, respond in Arabic. French - French. Spanish - Spanish. Never switch languages mid-conversation.
@@ -133,7 +133,10 @@ router.post("/coach/conversations", async (req, res) => {
       .returning();
 
     // Seed a welcome message (use persona from title prefix if provided)
-    const personaSlug = (parsed.data.title ?? "").toLowerCase().split(":")[0].trim();
+    const personaSlug = (parsed.data.title ?? "")
+      .toLowerCase()
+      .split(":")[0]
+      .trim();
     const welcome = PERSONA_WELCOMES[personaSlug] ?? DEFAULT_WELCOME;
 
     await db.insert(messagesTable).values({
@@ -141,7 +144,12 @@ router.post("/coach/conversations", async (req, res) => {
       role: "assistant",
       content: welcome,
     });
-    res.status(201).json({ ...conv, createdAt: conv.createdAt.toISOString() });
+
+    res.status(201).json({
+      ...conv,
+      createdAt: conv.createdAt.toISOString(),
+      welcome: welcome,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to create conversation");
     res.status(500).json({ error: "Failed to create conversation" });
@@ -189,28 +197,41 @@ router.post("/coach/chat", async (req, res) => {
   };
   const langInstruction =
     language && language !== "en"
-      ? `\n\nIMPORTANT: You MUST respond entirely in ${LANGUAGE_NAMES[language]} ?? "English"}. Do not switch languages.`
+      ? `\n\nIMPORTANT: You MUST respond entirely in ${LANGUAGE_NAMES[language] ?? "English"}. Do not switch languages.`
       : "";
   const systemPrompt =
     (persona && PERSONA_PROMPTS[persona]) ?? DEFAULT_PROMPT + langInstruction;
 
   // Save user message
-  await db.insert(messagesTable).values({
-    conversationId,
-    role: "user",
-    content,
-  });
+  try {
+    await db.insert(messagesTable).values({
+      conversationId,
+      role: "user",
+      content,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to save user message");
+    res.status(500).json({ error: "Failed to save user message" });
+    return;
+  }
 
   // Fetch history for context
-  const history = await db
-    .select()
-    .from(messagesTable)
-    .where(eq(messagesTable.conversationId, conversationId))
-    .orderBy(messagesTable.createdAt)
-    .execute();
+  let history;
+  try {
+    history = await db
+      .select()
+      .from(messagesTable)
+      .where(eq(messagesTable.conversationId, conversationId))
+      .orderBy(messagesTable.createdAt)
+      .execute();
+  } catch (err) {
+    req.log.error({ err }, "Failed to fetch conversation history");
+    res.status(500).json({ error: "Failed to fetch conversation history" });
+    return;
+  }
 
   const chatMessages: any[] = [
-    { role: "system", content: systemPrompt },
+    { role: "user", content: systemPrompt },
     ...history.map((m) => ({
       role: m.role === "user" ? "user" : "assistant",
       content: m.content,
@@ -221,7 +242,8 @@ router.post("/coach/chat", async (req, res) => {
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
 
-    let fullResponse = "";
+  let fullResponse = "";
+  let hasError = false;
 
   try {
     const result = await model.generateContentStream({
@@ -238,21 +260,34 @@ router.post("/coach/chat", async (req, res) => {
     }
 
     res.write(`data: [DONE]\n\n`);
-
-    await db.insert(messagesTable).values({
-      conversationId,
-      role: "assistant",
-      content: fullResponse,
-    });
-
-    res.end();
   } catch (error) {
-    console.error("Error generating content:", error);
-    res.write(`data: ${JSON.stringify({ error: "AI coach unavailable" })}\n\n`);
-    res.end();
+    req.log.error({ error }, "Error generating content");
+    hasError = true;
+    res.write(
+      `data: ${JSON.stringify({ error: "AI coach unavailable" })}\n\n`
+    );
+    res.write(`data: [DONE]\n\n`);
   }
+
+  // Save assistant response to database BEFORE closing the connection
+  try {
+    if (!hasError && fullResponse.trim()) {
+      await db.insert(messagesTable).values({
+        conversationId,
+        role: "assistant",
+        content: fullResponse,
+      });
+    }
+  } catch (err) {
+    req.log.error(
+      { err },
+      "Failed to save assistant message to database - response already sent to client"
+    );
+    // Log error but don't try to send response as headers already sent
+  }
+
+  // Close the response only once
+  res.end();
 });
 
 export default router;
-
-           
