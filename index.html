@@ -174,18 +174,13 @@
             font-size: 0.9em;
         }
 
-        .loading {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: #3b82f6;
-            border-radius: 50%;
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
+        .success-message {
+            color: #86efac;
+            padding: 10px;
+            background: #1b4d2d;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
         }
 
         .language-selector {
@@ -209,6 +204,30 @@
             background: #3b82f6;
             border-color: #3b82f6;
             color: white;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .chat-container {
+                height: 400px;
+            }
+
+            .persona-selector {
+                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+                gap: 8px;
+            }
         }
     </style>
 </head>
@@ -241,6 +260,7 @@
         </div>
 
         <div id="errorContainer"></div>
+        <div id="successContainer"></div>
 
         <div class="chat-container">
             <div class="messages" id="messages"></div>
@@ -283,6 +303,14 @@
             }, 5000);
         }
 
+        function displaySuccess(message) {
+            const successContainer = document.getElementById('successContainer');
+            successContainer.innerHTML = `<div class="success-message"><span class="status-indicator"></span>${message}</div>`;
+            setTimeout(() => {
+                successContainer.innerHTML = '';
+            }, 3000);
+        }
+
         async function initializeConversation() {
             try {
                 const response = await fetch('/api/coach/conversations', {
@@ -294,8 +322,9 @@
                 const data = await response.json();
                 conversationId = data.id;
                 displayMessage(data.welcome || 'مرحباً! أنا مدربك الشخصي. أخبرني عن هدفك.', 'assistant');
+                displaySuccess('تم الاتصال بالخادم بنجاح');
             } catch (error) {
-                displayError('فشل تهيئة المحادثة. حاول مجدداً.');
+                displayError('فشل تهيئة المحادثة. تحقق من الاتصال وحاول مجدداً.');
             }
         }
 
@@ -361,7 +390,7 @@
                                     displayError(parsed.error);
                                 }
                             } catch (e) {
-                                // Silent error handling
+                                // Silent parsing error
                             }
                         }
                     }
@@ -371,7 +400,7 @@
                     displayMessage(assistantMessage, 'assistant');
                 }
             } catch (error) {
-                displayError('حدث خطأ. تحقق من الاتصال وحاول مجدداً.');
+                displayError('خطأ في الاتصال. تحقق من الخادم وحاول مجدداً.');
             } finally {
                 isLoading = false;
                 document.getElementById('sendBtn').disabled = false;
@@ -379,7 +408,6 @@
             }
         }
 
-        // Initialize on load
         window.addEventListener('load', () => {
             initializeConversation();
         });
