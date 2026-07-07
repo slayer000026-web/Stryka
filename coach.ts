@@ -222,8 +222,7 @@ router.post("/coach/chat", async (req, res) => {
       .select()
       .from(messagesTable)
       .where(eq(messagesTable.conversationId, conversationId))
-      .orderBy(messagesTable.createdAt)
-      .execute();
+      .orderBy(messagesTable.createdAt);
   } catch (err) {
     req.log.error({ err }, "Failed to fetch conversation history");
     res.status(500).json({ error: "Failed to fetch conversation history" });
