@@ -229,6 +229,69 @@
                 gap: 8px;
             }
         }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            background: rgba(15, 23, 42, 0.98);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #64748b;
+            font-size: 0.65rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 5px 15px;
+            border-radius: 12px;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            color: #94a3b8;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item.active {
+            color: #3b82f6;
+        }
+
+        .nav-icon {
+            font-size: 1.4rem;
+        }
+
+        .nav-label {
+            font-weight: 500;
+        }
+
+        /* Page placeholders */
+        .page-placeholder {
+            display: none;
+            padding: 40px 20px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .page-placeholder h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .page-placeholder.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -262,20 +325,83 @@
         <div id="errorContainer"></div>
         <div id="successContainer"></div>
 
-        <div class="chat-container">
+        <!-- Page Placeholders -->
+        <div id="page-roadmap" class="page-placeholder">
+            <h2>🗺️ Roadmap</h2>
+            <p>قريباً...</p>
+        </div>
+        <div id="page-plans" class="page-placeholder">
+            <h2>📋 Plans</h2>
+            <p>قريباً...</p>
+        </div>
+        <div id="page-social" class="page-placeholder">
+            <h2>👥 Social</h2>
+            <p>قريباً...</p>
+        </div>
+        <div id="page-settings" class="page-placeholder">
+            <h2>⚙️ Settings</h2>
+            <p>قريباً...</p>
+        </div>
+
+        <div class="chat-container" id="chat-container">
             <div class="messages" id="messages"></div>
             <div class="input-area">
                 <input type="text" id="userInput" placeholder="اكتب هدفك أو سؤالك..." onkeypress="handleKeyPress(event)">
                 <button onclick="sendMessage()" id="sendBtn">إرسال</button>
             </div>
         </div>
+
+        <!-- Spacer for bottom nav -->
+        <div style="height: 60px;"></div>
     </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a class="nav-item active" onclick="switchPage('coach')">
+            <span class="nav-icon">⚡</span>
+            <span class="nav-label">Coach</span>
+        </a>
+        <a class="nav-item" onclick="switchPage('roadmap')">
+            <span class="nav-icon">🗺️</span>
+            <span class="nav-label">Roadmap</span>
+        </a>
+        <a class="nav-item" onclick="switchPage('plans')">
+            <span class="nav-icon">📋</span>
+            <span class="nav-label">Plans</span>
+        </a>
+        <a class="nav-item" onclick="switchPage('social')">
+            <span class="nav-icon">👥</span>
+            <span class="nav-label">Social</span>
+        </a>
+        <a class="nav-item" onclick="switchPage('settings')">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Settings</span>
+        </a>
+    </nav>
 
     <script>
         let currentPersona = 'leo';
         let currentLanguage = 'ar';
         let conversationId = null;
         let isLoading = false;
+
+        function switchPage(page) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelector(`.nav-item[onclick="switchPage('${page}')"]`).classList.add('active');
+            
+            const chatContainer = document.getElementById('chat-container');
+            const pagePlaceholders = document.querySelectorAll('.page-placeholder');
+            
+            if (page === 'coach') {
+                chatContainer.style.display = 'flex';
+                pagePlaceholders.forEach(p => p.classList.remove('active'));
+            } else {
+                chatContainer.style.display = 'none';
+                pagePlaceholders.forEach(p => p.classList.remove('active'));
+                const targetPage = document.getElementById(`page-${page}`);
+                if (targetPage) targetPage.classList.add('active');
+            }
+        }
 
         function selectPersona(persona, event) {
             currentPersona = persona;
