@@ -3,11 +3,6 @@
   "buildCommand": "npm run build || true",
   "devCommand": "npm run dev || npm start || node .",
   "env": {},
-  "functions": {
-    "coach.ts": {
-      "memory": 1024
-    }
-  },
   "rewrites": [
     {
       "source": "/api/:path*",
