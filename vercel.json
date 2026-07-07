@@ -2,6 +2,7 @@
   "version": 2,
   "buildCommand": "npm run build || true",
   "devCommand": "npm run dev || npm start || node .",
+  "outputDirectory": ".",
   "env": {},
   "rewrites": [
     {
