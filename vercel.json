@@ -2,9 +2,7 @@
   "version": 2,
   "buildCommand": "npm run build || true",
   "devCommand": "npm run dev || npm start || node .",
-  "env": {
-    "GEMINI_API_KEY": "@gemini_api_key"
-  },
+  "env": {},
   "functions": {
     "coach.ts": {
       "runtime": "nodejs18.x",
