@@ -5,7 +5,6 @@
   "env": {},
   "functions": {
     "coach.ts": {
-      "runtime": "nodejs18.x",
       "memory": 1024
     }
   },
