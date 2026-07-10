@@ -3,17 +3,6 @@
   "buildCommand": "npm run build || true",
   "devCommand": "npm run dev || npm start || node .",
   "outputDirectory": ".",
-  "github": {
-    "enabled": true,
-    "autoJobCancellation": true,
-    "silent": false
-  },
-  "gitSource": {
-    "type": "github",
-    "repo": "slayer000026-web/Stryka",
-    "ref": "main",
-    "sha": "89e64033a1057343e3a7e7e3e1ca8dcc20615174"
-  },
   "rewrites": [
     {
       "source": "/api/:path*",
