@@ -1,15 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "npm run build || true",
-  "devCommand": "npm run dev || npm start || node .",
   "outputDirectory": ".",
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "/coach.ts"
+      "source": "/api/coach(.*)",
+      "destination": "/api/coach.ts"
     },
     {
-      "source": "/:path((?!api)[^.]*)*",
+      "source": "/:path((?!api)[^.]*)",
       "destination": "/index.html"
     }
   ]
