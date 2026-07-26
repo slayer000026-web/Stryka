@@ -4,11 +4,11 @@
   "rewrites": [
     {
       "source": "/api/coach",
-      "destination": "/api/coach.ts"
+      "destination": "/api/coach.js"
     },
     {
       "source": "/api/coach/chat",
-      "destination": "/api/coach.ts"
+      "destination": "/api/coach.js"
     },
     {
       "source": "/:path((?!api)[^.]*)",
