@@ -3,7 +3,11 @@
   "outputDirectory": ".",
   "rewrites": [
     {
-      "source": "/api/coach(.*)",
+      "source": "/api/coach",
+      "destination": "/api/coach.ts"
+    },
+    {
+      "source": "/api/coach/chat",
       "destination": "/api/coach.ts"
     },
     {

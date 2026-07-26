@@ -425,21 +425,24 @@
     <script>
         let currentPersona = 'leo';
         let currentLanguage = 'ar';
+        let conversationId = null;
         let isLoading = false;
 
         function switchPage(page) {
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.querySelector(`.nav-item[onclick="switchPage(\'${page}\')"]`).classList.add('active');
+            document.querySelector(`.nav-item[onclick="switchPage('${page}')"]`).classList.add('active');
+            
             const chatContainer = document.getElementById('chat-container');
-            const placeholders = document.querySelectorAll('.page-placeholder');
+            const pagePlaceholders = document.querySelectorAll('.page-placeholder');
+            
             if (page === 'coach') {
                 chatContainer.style.display = 'flex';
-                placeholders.forEach(p => p.classList.remove('active'));
+                pagePlaceholders.forEach(p => p.classList.remove('active'));
             } else {
                 chatContainer.style.display = 'none';
-                placeholders.forEach(p => p.classList.remove('active'));
-                const target = document.getElementById(`page-${page}`);
-                if (target) target.classList.add('active');
+                pagePlaceholders.forEach(p => p.classList.remove('active'));
+                const targetPage = document.getElementById(`page-${page}`);
+                if (targetPage) targetPage.classList.add('active');
             }
         }
 
@@ -455,9 +458,39 @@
             event.target.classList.add('active');
         }
 
-        function scrollToBottom() {
-            const messages = document.getElementById('messages');
-            messages.scrollTop = messages.scrollHeight;
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !isLoading) {
+                sendMessage();
+            }
+        }
+
+        function displayError(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = `<div class="error-message">❌ ${message}</div>`;
+            setTimeout(() => {
+                errorContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        function displaySuccess(message) {
+            const successContainer = document.getElementById('successContainer');
+            successContainer.innerHTML = `<div class="success-message"><span class="status-indicator"></span>${message}</div>`;
+            setTimeout(() => {
+                successContainer.innerHTML = '';
+            }, 3000);
+        }
+
+        function initializeConversation() {
+            // Show welcome message
+            const welcomeMessages = {
+                leo: 'Leo. I don\'t waste time and neither will you. Tell me your goal - one sentence, specific and measurable.',
+                nova: 'Nova online. I\'m going to architect a structured path for you. State your goal precisely.',
+                zen: 'I\'m Zen. Before we move, let\'s get clear on where you want to go. Share your goal.',
+                vibe: 'VIBE IS HERE AND WE ARE BUILDING TODAY! 🔥 Drop your goal right now!',
+                sage: 'I am Sage. Every great achievement begins with a clearly stated intention. Tell me your goal.'
+            };
+            const welcome = welcomeMessages[currentPersona] || 'Hello! I\'m your coach. Tell me your goal.';
+            displayMessage(welcome, 'assistant');
         }
 
         function displayMessage(content, role) {
@@ -466,67 +499,6 @@
             msgDiv.className = `message ${role}`;
             msgDiv.textContent = content;
             messagesDiv.appendChild(msgDiv);
-            scrollToBottom();
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
 
-        function initializeConversation() {
-            const welcomes = {
-                leo: 'Leo. I don't waste time. Tell me your goal.',
-                nova: 'Nova online. State your goal precisely.',
-                zen: 'I'm Zen. Share your goal with me.',
-                vibe: 'VIBE IS HERE! 🔥 Drop your goal now!',
-                sage: 'I am Sage. Tell me your goal.'
-            };
-            displayMessage(welcomes[currentPersona] || 'Hello! Tell me your goal.', 'assistant');
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('userInput').value.trim();
-            if (!input || isLoading) return;
-
-            displayMessage(input, 'user');
-            document.getElementById('userInput').value = '';
-            isLoading = true;
-            document.getElementById('sendBtn').disabled = true;
-
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'message assistant';
-            typingDiv.id = 'typing';
-            typingDiv.textContent = '...';
-            document.getElementById('messages').appendChild(typingDiv);
-            scrollToBottom();
-
-            try {
-                const response = await fetch('/api/coach', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: input })
-                });
-
-                document.getElementById('typing')?.remove();
-
-                if (!response.ok) {
-                    const err = await response.json().catch(() => ({}));
-                    throw new Error(err.error || 'Request failed');
-                }
-
-                const data = await response.json();
-                if (data.content) {
-                    displayMessage(data.content, 'assistant');
-                }
-            } catch (err) {
-                document.getElementById('typing')?.remove();
-                displayMessage('Sorry, please try again.', 'assistant');
-            } finally {
-                isLoading = false;
-                document.getElementById('sendBtn').disabled = false;
-                document.getElementById('userInput').focus();
-            }
-        }
-
-        window.addEventListener('load', () => {
-            initializeConversation();
-        });
-    </script>
-</body>
-</html>
