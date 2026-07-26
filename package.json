@@ -1,5 +1,21 @@
 {
+  "name": "stryka-coach",
+  "version": "1.0.0",
+  "description": "AI-powered goal coaching app",
+  "scripts": {
+    "dev": "npx vercel dev",
+    "build": "echo 'Static site - no build needed'",
+    "android:init": "npx cap init Stryka com.stryka.coach --web-dir=.",
+    "android:add": "npx cap add android",
+    "android:sync": "npx cap sync android",
+    "android:open": "npx cap open android",
+    "android:build": "npx cap sync android && cd android && ./gradlew assembleDebug"
+  },
   "dependencies": {
-    "vercel": "^54.21.1"
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/splash-screen": "^6.0.0",
+    "@capacitor/status-bar": "^6.0.0"
   }
 }

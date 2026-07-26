@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
     <title>Stryka Coach</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -15,7 +19,7 @@
             display: flex; flex-direction: column;
             height: 100vh; max-width: 600px; margin: 0 auto; background: #0a0a0a;
         }
-        /* Compact Header */
+        /* Header */
         .header {
             padding: 14px 20px; background: #0a0a0a;
             border-bottom: 1px solid #1a1a1a; display: flex; align-items: center; gap: 12px;
@@ -55,11 +59,10 @@
         .send-btn {
             width: 46px; height: 46px; background: linear-gradient(135deg, #6d28d9, #7c3aed);
             border: none; border-radius: 50%; color: #fff; font-size: 1.1rem; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; transition: transform 0.1s;
+            display: flex; align-items: center; justify-content: center;
         }
-        .send-btn:hover { transform: scale(1.05); }
         .send-btn:active { transform: scale(0.95); }
-        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .send-btn:disabled { opacity: 0.5; }
         /* Bottom Navigation */
         .bottom-nav {
             display: flex; justify-content: space-around; padding: 10px 0;
@@ -67,14 +70,14 @@
         }
         .nav-item {
             display: flex; flex-direction: column; align-items: center; gap: 3px;
-            color: #444; font-size: 0.65rem; cursor: pointer; padding: 4px 10px; transition: color 0.2s;
+            color: #444; font-size: 0.65rem; cursor: pointer; padding: 4px 10px;
         }
         .nav-item.active { color: #8b5cf6; }
         .nav-icon { font-size: 1.3rem; }
         /* Page Content */
         .page-content { display: none; flex: 1; padding: 20px; overflow-y: auto; }
         .page-content.active { display: block; }
-        /* Plans Grid */
+        /* Plans */
         .plans-grid { display: flex; flex-direction: column; gap: 14px; }
         .plan-card {
             background: #141414; border-radius: 16px; padding: 18px; border: 1px solid #222;
@@ -84,10 +87,41 @@
         .plan-price { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; }
         .plan-price span { font-size: 0.85rem; font-weight: 400; color: #555; }
         .plan-desc { color: #666; font-size: 0.85rem; line-height: 1.5; }
+        .plan-btn {
+            width: 100%; padding: 12px; margin-top: 12px; border: none; border-radius: 10px;
+            font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .plan-btn.primary { background: #6d28d9; color: #fff; }
+        .plan-btn.secondary { background: #222; color: #888; }
+        /* Wallet */
+        .wallet-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px; padding: 24px; margin-bottom: 20px; border: 1px solid #333;
+        }
+        .wallet-balance { font-size: 2.5rem; font-weight: 700; color: #fff; }
+        .wallet-label { color: #666; font-size: 0.85rem; margin-bottom: 8px; }
+        .wallet-actions { display: flex; gap: 12px; margin-top: 16px; }
+        .wallet-btn {
+            flex: 1; padding: 12px; border: none; border-radius: 10px;
+            font-weight: 600; cursor: pointer;
+        }
+        .wallet-btn.deposit { background: #6d28d9; color: #fff; }
+        .wallet-btn.withdraw { background: #222; color: #888; }
+        /* Subscription */
+        .sub-badge {
+            display: inline-block; padding: 4px 12px; border-radius: 20px;
+            font-size: 0.75rem; font-weight: 600; margin-top: 8px;
+        }
+        .sub-badge.free { background: #333; color: #888; }
+        .sub-badge.pro { background: #8b5cf6; color: #fff; }
+        .sub-badge.max { background: #8b5cf6; color: #fff; }
+        .sub-badge.ultra { background: #f59e0b; color: #000; }
+        .sub-badge.ultramax { background: linear-gradient(135deg, #6d28d9, #7c3aed); color: #fff; }
+        /* Placeholder */
         .placeholder-page { text-align: center; padding: 60px 20px; color: #444; }
         .placeholder-page h2 { font-size: 1.4rem; margin-bottom: 10px; }
         ::-webkit-scrollbar { width: 3px; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb { background: #333; }
     </style>
 </head>
 <body>
@@ -114,24 +148,63 @@
         </div>
         <!-- Plans Page -->
         <div id="page-plans" class="page-content">
-            <h2 style="margin-bottom: 18px; font-size: 1.2rem; color: #fff;">📋 Choose Your Path to Success</h2>
+            <h2 style="margin-bottom: 18px; font-size: 1.2rem; color: #fff;">📋 Subscription Plans</h2>
             <div class="plans-grid">
-                <div class="plan-card"><div class="plan-name">Stryka Pro</div><div class="plan-price" style="color: #8b5cf6;">$9<span>/mo</span></div><div class="plan-desc">The foundation you need. Includes task tracking, streaks, and our smart dashboard.</div></div>
-                <div class="plan-card"><div class="plan-name">Stryka Pro Max</div><div class="plan-price" style="color: #a78bfa;">$15<span>/mo</span></div><div class="plan-desc">Unlimited goals and advanced analytics. Visualize your progress with interactive charts.</div></div>
-                <div class="plan-card"><div class="plan-name">Stryka Ultra</div><div class="plan-price" style="color: #c4b5fd;">$49<span>/year</span></div><div class="plan-desc">Strategic insights, focus timers (Pomodoro), and multi-device sync.</div></div>
-                <div class="plan-card featured"><div class="plan-name">Stryka Ultra Pro Max</div><div class="plan-price" style="color: #fff;">$99<span>/Lifetime</span></div><div class="plan-desc">Lifetime access, priority support, and a fully modular Notion-style workspace.</div></div>
+                <div class="plan-card">
+                    <div class="plan-name">Stryka Pro <span class="sub-badge free">FREE</span></div>
+                    <div class="plan-price" style="color: #888;">$0<span>/mo</span></div>
+                    <div class="plan-desc">Basic task tracking and streaks.</div>
+                    <button class="plan-btn secondary">Current Plan</button>
+                </div>
+                <div class="plan-card">
+                    <div class="plan-name">Stryka Pro Max</div>
+                    <div class="plan-price" style="color: #8b5cf6;">$15<span>/mo</span></div>
+                    <div class="plan-desc">Unlimited goals and advanced analytics.</div>
+                    <button class="plan-btn primary">Upgrade Now</button>
+                </div>
+                <div class="plan-card">
+                    <div class="plan-name">Stryka Ultra</div>
+                    <div class="plan-price" style="color: #f59e0b;">$49<span>/year</span></div>
+                    <div class="plan-desc">Strategic insights and Pomodoro timers.</div>
+                    <button class="plan-btn primary">Upgrade Now</button>
+                </div>
+                <div class="plan-card featured">
+                    <div class="plan-name">Stryka Ultra Pro Max</div>
+                    <div class="plan-price" style="color: #fff;">$99<span>/Lifetime</span></div>
+                    <div class="plan-desc">Full access, priority support, Notion-style workspace.</div>
+                    <button class="plan-btn primary">Get Lifetime Access</button>
+                </div>
             </div>
         </div>
+        <!-- Wallet Page -->
+        <div id="page-wallet" class="page-content">
+            <h2 style="margin-bottom: 18px; font-size: 1.2rem; color: #fff;">💰 Wallet</h2>
+            <div class="wallet-card">
+                <div class="wallet-label">Available Balance</div>
+                <div class="wallet-balance">$0.00 <span style="font-size: 1rem; color: #666;">USD</span></div>
+                <span class="sub-badge pro">No Active Subscription</span>
+                <div class="wallet-actions">
+                    <button class="wallet-btn deposit">+ Add Funds</button>
+                    <button class="wallet-btn withdraw">Withdraw</button>
+                </div>
+            </div>
+            <h3 style="color: #888; font-size: 0.9rem; margin-bottom: 12px;">Transaction History</h3>
+            <div style="color: #444; text-align: center; padding: 30px;">No transactions yet</div>
+        </div>
         <!-- Social Page -->
-        <div id="page-social" class="page-content"><div class="placeholder-page"><h2>👥 Social</h2><p>Coming soon...</p></div></div>
+        <div id="page-social" class="page-content">
+            <div class="placeholder-page"><h2>👥 Social</h2><p>Coming soon...</p></div>
+        </div>
         <!-- Settings Page -->
-        <div id="page-settings" class="page-content"><div class="placeholder-page"><h2>⚙️ Settings</h2><p>Coming soon...</p></div></div>
+        <div id="page-settings" class="page-content">
+            <div class="placeholder-page"><h2>⚙️ Settings</h2><p>Coming soon...</p></div>
+        </div>
         <!-- Bottom Navigation -->
         <nav class="bottom-nav">
             <div class="nav-item active" onclick="switchPage('coach')"><span class="nav-icon">⚡</span><span>Coach</span></div>
             <div class="nav-item" onclick="switchPage('roadmap')"><span class="nav-icon">🗺️</span><span>Roadmap</span></div>
             <div class="nav-item" onclick="switchPage('plans')"><span class="nav-icon">📋</span><span>Plans</span></div>
-            <div class="nav-item" onclick="switchPage('social')"><span class="nav-icon">👥</span><span>Social</span></div>
+            <div class="nav-item" onclick="switchPage('wallet')"><span class="nav-icon">💰</span><span>Wallet</span></div>
             <div class="nav-item" onclick="switchPage('settings')"><span class="nav-icon">⚙️</span><span>Settings</span></div>
         </nav>
     </div>
@@ -171,7 +244,7 @@
         }
         
         document.getElementById('userInput').addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
-        window.addEventListener('load', () => setTimeout(() => addMessage("I don't waste time and neither will you. Tell me your goal - one sentence, specific and measurable.", 'assistant'), 400));
+        window.addEventListener('load', () => setTimeout(() => addMessage("I don't waste time. Tell me your goal.", 'assistant'), 400));
     </script>
 </body>
 </html>
