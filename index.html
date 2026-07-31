@@ -235,16 +235,36 @@
             input.value = ''; addMessage(msg, 'user'); isLoading = true;
             document.getElementById('sendBtn').disabled = true;
             try {
-                const res = await fetch('/api/coach', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:msg})});
-                if(!res.ok) throw new Error('Request failed');
+                const res = await window.retryFetch('/api/coach', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({content:msg})
+                });
                 const data = await res.json();
                 if(data.content) addMessage(data.content, 'assistant');
-            } catch(e) { addMessage('Sorry, connection failed. Please try again.', 'assistant'); }
+                else if(data.error) addMessage('Error: ' + data.error, 'assistant');
+            } catch(e) { addMessage('Connection failed. Please check your internet and try again.', 'assistant'); }
             finally { isLoading = false; document.getElementById('sendBtn').disabled = false; input.focus(); }
         }
         
         document.getElementById('userInput').addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
-        window.addEventListener('load', () => setTimeout(() => addMessage("I don't waste time. Tell me your goal.", 'assistant'), 400));
+        window.addEventListener('load', () => {
+    // Bilingual welcome
+    addMessage("I don't waste time. Tell me your goal - one sentence, specific and measurable.", 'assistant');
+});
+
+// Add retry logic for failed requests
+window.retryFetch = async function(url, options, retries = 3) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const res = await fetch(url, options);
+            if (res.ok) return res;
+        } catch (e) {
+            if (i === retries - 1) throw e;
+            await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+        }
+    }
+};
     </script>
 </body>
 </html>
