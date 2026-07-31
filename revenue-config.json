@@ -1,0 +1,40 @@
+{
+  "currency": "USD",
+  "pricing_tiers": {
+    "free": {
+      "price": 0,
+      "interval": "monthly",
+      "name": "Stryka Pro"
+    },
+    "pro_max": {
+      "price": 15,
+      "interval": "monthly",
+      "name": "Stryka Pro Max"
+    },
+    "ultra": {
+      "price": 49,
+      "interval": "yearly",
+      "name": "Stryka Ultra",
+      "monthly_equivalent": 4.08
+    },
+    "ultra_pro_max": {
+      "price": 99,
+      "interval": "lifetime",
+      "name": "Stryka Ultra Pro Max"
+    }
+  },
+  "wallet": {
+    "min_deposit": 5,
+    "min_withdrawal": 10,
+    "supported_methods": [
+      "paypal",
+      "stripe",
+      "bank_transfer"
+    ],
+    "currency_symbol": "$"
+  },
+  "revenue_share": {
+    "platform_fee_percent": 5,
+    "creator_percent": 95
+  }
+}

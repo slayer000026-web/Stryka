@@ -1,0 +1,20 @@
+{
+  "cache": {
+    "enabled": true,
+    "max_age_seconds": 3600,
+    "strategies": [
+      "memory",
+      "localStorage"
+    ]
+  },
+  "optimizations": {
+    "lazy_load_images": true,
+    "preload_critical_css": true,
+    "defer_non_critical_js": true
+  },
+  "cleanup": {
+    "auto_clear_cache_days": 7,
+    "remove_old_messages": true,
+    "max_stored_messages": 100
+  }
+}
