@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0a0a0a">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="/manifest.json">
     <title>Stryka Coach</title>
     <style>
@@ -21,13 +20,13 @@
         }
         /* Header */
         .header {
-            padding: 14px 20px; background: #0a0a0a;
-            border-bottom: 1px solid #1a1a1a; display: flex; align-items: center; gap: 12px;
+            padding: 16px 20px; background: #0a0a0a;
+            border-bottom: 1px solid #1a1a1a; display: flex; align-items: center; gap: 14px;
         }
-        .header-icon { font-size: 1.8rem; }
+        .header-icon { font-size: 2rem; }
         .header-info { display: flex; flex-direction: column; }
-        .header-name { font-size: 1.1rem; font-weight: 700; color: #fff; }
-        .header-tag { font-size: 0.7rem; color: #8b5cf6; letter-spacing: 1px; font-weight: 600; }
+        .header-name { font-size: 1.2rem; font-weight: 700; color: #fff; }
+        .header-tag { font-size: 0.65rem; color: #8b5cf6; letter-spacing: 1.5px; font-weight: 600; }
         /* Chat Area */
         .chat-area {
             flex: 1; overflow-y: auto; padding: 16px;
@@ -57,23 +56,23 @@
         .input-field:focus { border-color: #6d28d9; }
         .input-field::placeholder { color: #555; }
         .send-btn {
-            width: 46px; height: 46px; background: linear-gradient(135deg, #6d28d9, #7c3aed);
-            border: none; border-radius: 50%; color: #fff; font-size: 1.1rem; cursor: pointer;
+            width: 48px; height: 48px; background: linear-gradient(135deg, #6d28d9, #7c3aed);
+            border: none; border-radius: 50%; color: #fff; font-size: 1.2rem; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
         }
         .send-btn:active { transform: scale(0.95); }
         .send-btn:disabled { opacity: 0.5; }
         /* Bottom Navigation */
         .bottom-nav {
-            display: flex; justify-content: space-around; padding: 10px 0;
+            display: flex; justify-content: space-around; padding: 8px 0;
             background: #080808; border-top: 1px solid #1a1a1a;
         }
         .nav-item {
-            display: flex; flex-direction: column; align-items: center; gap: 3px;
-            color: #444; font-size: 0.65rem; cursor: pointer; padding: 4px 10px;
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            color: #444; font-size: 0.6rem; cursor: pointer; padding: 4px 10px;
         }
         .nav-item.active { color: #8b5cf6; }
-        .nav-icon { font-size: 1.3rem; }
+        .nav-icon { font-size: 1.4rem; }
         /* Page Content */
         .page-content { display: none; flex: 1; padding: 20px; overflow-y: auto; }
         .page-content.active { display: block; }
@@ -89,7 +88,7 @@
         .plan-desc { color: #666; font-size: 0.85rem; line-height: 1.5; }
         .plan-btn {
             width: 100%; padding: 12px; margin-top: 12px; border: none; border-radius: 10px;
-            font-weight: 600; cursor: pointer; transition: all 0.2s;
+            font-weight: 600; cursor: pointer;
         }
         .plan-btn.primary { background: #6d28d9; color: #fff; }
         .plan-btn.secondary { background: #222; color: #888; }
@@ -114,9 +113,7 @@
         }
         .sub-badge.free { background: #333; color: #888; }
         .sub-badge.pro { background: #8b5cf6; color: #fff; }
-        .sub-badge.max { background: #8b5cf6; color: #fff; }
         .sub-badge.ultra { background: #f59e0b; color: #000; }
-        .sub-badge.ultramax { background: linear-gradient(135deg, #6d28d9, #7c3aed); color: #fff; }
         /* Placeholder */
         .placeholder-page { text-align: center; padding: 60px 20px; color: #444; }
         .placeholder-page h2 { font-size: 1.4rem; margin-bottom: 10px; }
@@ -182,7 +179,7 @@
             <div class="wallet-card">
                 <div class="wallet-label">Available Balance</div>
                 <div class="wallet-balance">$0.00 <span style="font-size: 1rem; color: #666;">USD</span></div>
-                <span class="sub-badge pro">No Active Subscription</span>
+                <span class="sub-badge free">No Active Subscription</span>
                 <div class="wallet-actions">
                     <button class="wallet-btn deposit">+ Add Funds</button>
                     <button class="wallet-btn withdraw">Withdraw</button>
@@ -235,36 +232,21 @@
             input.value = ''; addMessage(msg, 'user'); isLoading = true;
             document.getElementById('sendBtn').disabled = true;
             try {
-                const res = await window.retryFetch('/api/coach', {
+                const res = await fetch('/api/coach', {
                     method:'POST',
                     headers:{'Content-Type':'application/json'},
                     body:JSON.stringify({content:msg})
                 });
                 const data = await res.json();
                 if(data.content) addMessage(data.content, 'assistant');
-                else if(data.error) addMessage('Error: ' + data.error, 'assistant');
-            } catch(e) { addMessage('Connection failed. Please check your internet and try again.', 'assistant'); }
+            } catch(e) { addMessage('Connection error. Please try again.', 'assistant'); }
             finally { isLoading = false; document.getElementById('sendBtn').disabled = false; input.focus(); }
         }
         
         document.getElementById('userInput').addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
         window.addEventListener('load', () => {
-    // Bilingual welcome
-    addMessage("I don't waste time. Tell me your goal - one sentence, specific and measurable.", 'assistant');
-});
-
-// Add retry logic for failed requests
-window.retryFetch = async function(url, options, retries = 3) {
-    for (let i = 0; i < retries; i++) {
-        try {
-            const res = await fetch(url, options);
-            if (res.ok) return res;
-        } catch (e) {
-            if (i === retries - 1) throw e;
-            await new Promise(r => setTimeout(r, 1000 * (i + 1)));
-        }
-    }
-};
+            setTimeout(() => addMessage("I don't waste time. Tell me your goal - one sentence, specific and measurable.", 'assistant'), 300);
+        });
     </script>
 </body>
 </html>
